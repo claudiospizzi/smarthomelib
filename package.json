@@ -1,6 +1,6 @@
 {
   "name": "smarthomelib",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "TypeScript library to integrate various devices into a Loxone smart home.",
   "keywords": [
     "smarthome",
