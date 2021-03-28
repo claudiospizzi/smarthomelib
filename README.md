@@ -1,4 +1,4 @@
-# loxone2smarthome
+# smarthomelib
 
 TypeScript library to integrate various devices into a [Loxone] smart home. The
 following projects are using this library:
