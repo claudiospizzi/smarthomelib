@@ -18,6 +18,8 @@ export type LoxoneMiniserverMessage = {
   thing: string;
   property: string;
   value: string;
+  location: string | undefined;
+  description: string | undefined;
 };
 
 /**
@@ -74,13 +76,28 @@ export class LoxoneMiniserver extends SmartHomeDevice {
           this.emitDisconnect<LoxoneMiniserver>(`${this.address}:${this.viPort}`, `udp://0.0.0.0:${this.voPort}`);
         });
         this.server.on('message', (msg, rinfo) => {
-          const loxoneRegex = /^(thing|name|device|dev|d)=(?<thing>.*) (property|key|k)=(?<property>.*) (value|val|v)=(?<value>.*)$/g;
-          const messageMatch = msg.toString().match(loxoneRegex);
-          if (messageMatch !== undefined) {
+          let thing = '', property = '', value = '';
+          let location: string | undefined, description: string | undefined;
+          const msgParts: string[] = msg.toString().split(',');
+          for (const msgPart of msgParts)
+          {
+            const msgPartKey = msgPart.substring(0, 2);
+            const msgPartValue = msgPart.substring(2);
+            switch (msgPartKey) {
+              case 't=': { thing = msgPartValue; break; }
+              case 'p=': { property = msgPartValue; break; }
+              case 'v=': { value = msgPartValue; break; }
+              case 'l=': { location = msgPartValue; break; }
+              case 'd=': { description = msgPartValue; break; }
+            }
+          }
+          if (thing !== '' && property !== '' && value !== '') {
             this.emitReceive<LoxoneMiniserver, LoxoneMiniserverMessage>(rinfo.address, {
-              thing: `${messageMatch?.groups?.thing}`,
-              property: `${messageMatch?.groups?.property}`,
-              value: `${messageMatch?.groups?.value}`,
+              thing: thing,
+              property: property,
+              value: value,
+              location: location,
+              description: description
             });
           }
         });
@@ -104,7 +121,7 @@ export class LoxoneMiniserver extends SmartHomeDevice {
    */
   send(thing: SmartHomeThing, property: string, value: string): void {
     if (this.initialized && this.server !== undefined) {
-      const message = `thing=${thing.name} property=${property} value=${value}`;
+      const message = `t=${thing.name} p=${property} v=${value}`;
       const data = Buffer.from(message);
       this.server.send(data, this.viPort, this.address, (error) => {
         if (error === null) {
@@ -112,6 +129,8 @@ export class LoxoneMiniserver extends SmartHomeDevice {
             thing: thing.name,
             property: property,
             value: value,
+            location: undefined,
+            description: undefined
           });
         } else {
           this.emitError<LoxoneMiniserver>(error);
