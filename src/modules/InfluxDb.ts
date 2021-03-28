@@ -21,6 +21,15 @@ export type InfluxDbMessage = {
 
 /**
  * Class representing a InfluxDB.
+ *
+ * This smart home device will emit the following message beside the default
+ * events info, warning and error:
+ * - connect => InfluxDb
+ *     Event if a connection to the InfluxDB was established.
+ * - disconnect => InfluxDb
+ *     Event if a connection to the InfluxDB was lost.
+ * - send => InfluxDb, InfluxDbMessage
+ *     All send messages to the InfluxDB.
  */
 export class InfluxDb extends SmartHomeDevice {
   private client?: InfluxDB;
@@ -52,7 +61,7 @@ export class InfluxDb extends SmartHomeDevice {
    */
   initialize(): void {
     if (!this.initialized) {
-      this.emitInfo('Initialize InfluxDB...');
+      this.emitInfo<InfluxDb>('Initialize InfluxDB...');
       try {
         this.client = new InfluxDB({
           host: this.address,

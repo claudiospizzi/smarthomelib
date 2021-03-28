@@ -25,6 +25,15 @@ export type MqttBrokerMessage = {
 
 /**
  * Class representing a MQTT Broker.
+ *
+ * This smart home device will emit the following message beside the default
+ * events info, warning and error:
+ * - connect => MqttBroker
+ *     Event if a connection to the MQTT Broker was established.
+ * - disconnect => MqttBroker
+ *     Event if a connection to the MQTT Broker was lost.
+ * - send => MqttBroker, MqttBrokerMessage
+ *     All send messages to the MQTT Broker.
  */
 export class MqttBroker extends SmartHomeDevice {
   private client?: MqttClient;
@@ -56,7 +65,7 @@ export class MqttBroker extends SmartHomeDevice {
    */
   initialize(): void {
     if (!this.initialized) {
-      this.emitInfo('Initialize MQTT Broker...');
+      this.emitInfo<MqttBroker>('Initialize MQTT Broker...');
       try {
         this.client = mqttConnect(this.url, {
           will: {

@@ -22,6 +22,17 @@ export type LoxoneMiniserverMessage = {
 
 /**
  * Class representing a Loxone Miniserver.
+ *
+ * This smart home device will emit the following message beside the default
+ * events info, warning and error:
+ * - connect => LoxoneMiniserver
+ *     Event if a connection was established.
+ * - disconnect => LoxoneMiniserver
+ *     Event if a connection was lost.
+ * - receive => LoxoneMiniserver, LoxoneMiniserverMessage
+ *     All received messages from the Loxone Miniserver.
+ * - send => LoxoneMiniserver, LoxoneMiniserverMessage
+ *     All send messages to the Loxone Miniserver.
  */
 export class LoxoneMiniserver extends SmartHomeDevice {
   private server?: Socket;
@@ -53,7 +64,7 @@ export class LoxoneMiniserver extends SmartHomeDevice {
    */
   initialize(): void {
     if (!this.initialized) {
-      this.emitInfo('Initialize Loxone Miniserver...');
+      this.emitInfo<LoxoneMiniserver>('Initialize Loxone Miniserver...');
       try {
         this.server = dgramCreateSocket('udp4');
         this.server.on('listening', () => {
