@@ -76,19 +76,36 @@ export class LoxoneMiniserver extends SmartHomeDevice {
           this.emitDisconnect<LoxoneMiniserver>(`${this.address}:${this.viPort}`, `udp://0.0.0.0:${this.voPort}`);
         });
         this.server.on('message', (msg, rinfo) => {
-          let thing = '', property = '', value = '';
-          let location: string | undefined, description: string | undefined;
+          let thing = '';
+          let property = '';
+          let value = '';
+          let location: string | undefined;
+          let description: string | undefined;
           const msgParts: string[] = msg.toString().split(',');
-          for (const msgPart of msgParts)
-          {
+          for (const msgPart of msgParts) {
             const msgPartKey = msgPart.substring(0, 2);
             const msgPartValue = msgPart.substring(2);
             switch (msgPartKey) {
-              case 't=': { thing = msgPartValue; break; }
-              case 'p=': { property = msgPartValue; break; }
-              case 'v=': { value = msgPartValue; break; }
-              case 'l=': { location = msgPartValue; break; }
-              case 'd=': { description = msgPartValue; break; }
+              case 't=': {
+                thing = msgPartValue;
+                break;
+              }
+              case 'p=': {
+                property = msgPartValue;
+                break;
+              }
+              case 'v=': {
+                value = msgPartValue;
+                break;
+              }
+              case 'l=': {
+                location = msgPartValue;
+                break;
+              }
+              case 'd=': {
+                description = msgPartValue;
+                break;
+              }
             }
           }
           if (thing !== '' && property !== '' && value !== '') {
@@ -97,7 +114,7 @@ export class LoxoneMiniserver extends SmartHomeDevice {
               property: property,
               value: value,
               location: location,
-              description: description
+              description: description,
             });
           }
         });
@@ -130,7 +147,7 @@ export class LoxoneMiniserver extends SmartHomeDevice {
             property: property,
             value: value,
             location: undefined,
-            description: undefined
+            description: undefined,
           });
         } else {
           this.emitError<LoxoneMiniserver>(error);
