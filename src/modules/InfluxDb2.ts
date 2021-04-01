@@ -9,6 +9,7 @@ export type InfluxDb2Option = {
   host: string;
   port: number;
   protocol: 'http' | 'https';
+  trusted: boolean;
   token: string;
   org: string;
   bucket: string;
@@ -43,6 +44,11 @@ export class InfluxDb2 extends SmartHomeDevice {
   public url: string;
 
   /**
+   * Flag if the certificate issuer should be checked.
+   */
+  public trusted: boolean;
+
+  /**
    * InfluxDB v2 authentication token.
    */
   private token: string;
@@ -65,6 +71,7 @@ export class InfluxDb2 extends SmartHomeDevice {
     super('InfluxDb2', option.host);
 
     this.url = `${option.protocol}://${option.host}:${option.port}`;
+    this.trusted = option.trusted;
     this.token = option.token;
     this.org = option.org;
     this.bucket = option.bucket;
@@ -80,6 +87,7 @@ export class InfluxDb2 extends SmartHomeDevice {
         this.client = new InfluxDB({
           url: this.url,
           token: this.token,
+          transportOptions: { rejectUnauthorized: this.trusted },
         });
         const queryApi = this.client.getQueryApi(this.org);
         // eslint-disable-next-line @typescript-eslint/no-this-alias

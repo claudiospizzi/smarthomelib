@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is mainly based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 0.3.0
+
+* Added: Option to allow untrusted connections to InfluxDB
+
 ## 0.2.1
 
 * Fixed: Missing export for InfluxDb2
