@@ -1,124 +1,131 @@
-import { InfluxDB, IPoint } from 'influx';
-import { SmartHomeDevice } from './SmartHomeDevice';
-import { SmartHomeThing } from './SmartHomeThing';
+import { InfluxDB, Point } from '@influxdata/influxdb-client';
+import { SmartHomeBase } from './SmartHomeBase';
 
 /**
- * Connection options for an InfluxDB.
+ * Constructor options for the InfluxDB.
  */
-export type InfluxDbOption = {
+export interface InfluxDbOption {
   host: string;
   port: number;
-  database: string;
-};
+  protocol: 'http' | 'https';
+  trusted: boolean;
+  token: string;
+  org: string;
+  bucket: string;
+}
 
 /**
- * Message interface to the InfluxDB.
+ * A smart home InfluxDB point.
  */
-export type InfluxDbMessage = {
-  measurement: string;
-  points: IPoint[];
-};
+export interface InfluxDbData {
+  system: string;
+  room: string;
+  device: string;
+  feature: string;
+  value: string | number | boolean;
+}
 
 /**
- * Class representing a InfluxDB.
- *
- * This smart home device will emit the following message beside the default
- * events info, warning and error:
- * - connect => InfluxDb
- *     Event if a connection to the InfluxDB was established.
- * - disconnect => InfluxDb
- *     Event if a connection to the InfluxDB was lost.
- * - send => InfluxDb, InfluxDbMessage
- *     All send messages to the InfluxDB.
+ * Class representing a smart home InfluxDB.
  */
-export class InfluxDb extends SmartHomeDevice {
+export class InfluxDb extends SmartHomeBase {
   private client?: InfluxDB;
-  public initialized = false;
+
+  private url: string;
+  private trusted: boolean;
+  private token: string;
+  private org: string;
+  private bucket: string;
 
   /**
-   * InfluxDB port.
-   */
-  public port: number;
-
-  /**
-   * InfluxDB database.
-   */
-  public database: string;
-
-  /**
-   * Create a new InfluxDB.
+   * Initialize the InfluxDB.
    * @param option Connection option.
    */
   constructor(option: InfluxDbOption) {
-    super('InfluxDb', option.host);
+    super({
+      name: 'InfluxDb',
+      localEndpoint: undefined,
+      remoteEndpoint: `${option.protocol}://${option.host}:${option.port}`,
+    });
 
-    this.port = option.port;
-    this.database = option.database;
+    this.url = `${option.protocol}://${option.host}:${option.port}`;
+    this.trusted = option.trusted;
+    this.token = option.token;
+    this.org = option.org;
+    this.bucket = option.bucket;
   }
 
   /**
    * Initialize the InfluxDB.
    */
   initialize(): void {
-    if (!this.initialized) {
-      this.emitInfo<InfluxDb>('Initialize InfluxDB...');
-      try {
-        this.client = new InfluxDB({
-          host: this.address,
-          port: this.port,
-          database: this.database,
-        });
-        this.client
-          .ping(5000)
-          .then((hosts) => {
-            if (hosts.length >= 1 && hosts[0].online) {
-              this.emitConnect<InfluxDb>(`http://${this.address}:${this.port}/${this.database}`);
-            } else {
-              this.emitDisconnect<InfluxDb>(`http://${this.address}:${this.port}/${this.database}`);
-            }
-          })
-          .catch((error) => {
-            this.emitError<InfluxDb>(error);
-          });
-        this.initialized = true;
-      } catch (error) {
-        this.emitError<InfluxDb>(error);
-      }
+    if (this.client === undefined) {
+      this.onInfo('Initialize InfluxDB');
+      this.client = new InfluxDB({
+        url: this.url,
+        token: this.token,
+        transportOptions: { rejectUnauthorized: this.trusted },
+      });
+      this.testConnection((error) => {
+        if (error !== undefined) {
+          this.onError(error);
+          this.onDisconnect();
+        } else {
+          this.onConnect();
+        }
+      });
+    } else {
+      this.onWarning('InfluxDB already initialized.');
+    }
+  }
+
+  private testConnection(callback: (result: Error | undefined) => void): void {
+    if (this.client !== undefined) {
+      const queryApi = this.client.getQueryApi(this.org);
+      queryApi.queryRows('buckets()', {
+        next() {
+          // Do nothing with the result rows.
+        },
+        error(error: Error) {
+          callback(error);
+        },
+        complete() {
+          callback(undefined);
+        },
+      });
+    } else {
+      this.onWarning('InfluxDB not initialized, unable to test connection.');
     }
   }
 
   /**
-   * Write a InfluxDB measurement.
-   * @param thing The smart home thing.
-   * @param measurement The InfluxDB measurement.
-   * @param field The value field name.
-   * @param value The value itself.
+   * Write data to the InfluxDB.
+   * @param data Data to write.
    */
-  async send(thing: SmartHomeThing, measurement: string, field: string, value: string): Promise<void> {
-    if (this.initialized && this.client !== undefined) {
+  async write(data: InfluxDbData): Promise<void> {
+    if (this.client !== undefined) {
       try {
-        const data: InfluxDbMessage = {
-          measurement: measurement,
-          points: [
-            {
-              fields: {
-                [field]: value,
-              },
-              tags: {
-                name: thing.name,
-                location: `${thing.location}`,
-                description: `${thing.description}`,
-              },
-            },
-          ],
-        };
-        await this.client?.writeMeasurement(data.measurement, data.points);
-        this.emitSend<InfluxDb, InfluxDbMessage>(`${this.address}:${this.port}`, data);
+        const writeApi = this.client.getWriteApi(this.org, this.bucket);
+        await writeApi.writePoint(InfluxDb.generatePoint(data));
       } catch (error) {
-        this.emitError(error);
+        this.onError(error);
       }
     } else {
-      this.emitWarning<InfluxDb>('InfluxDB not initialized, unable to write measurement.');
+      this.onWarning('InfluxDB not initialized, unable to write measurement.');
     }
+  }
+
+  private static generatePoint(data: InfluxDbData) {
+    let point = new Point('smarthome').tag('room', data.room).tag('device', data.device);
+    if (typeof data.value === 'string') {
+      point = point.stringField(data.feature, data.value);
+    }
+    if (typeof data.value === 'number') {
+      point = point.floatField(data.feature, data.value);
+    }
+    if (typeof data.value === 'boolean') {
+      point = point.booleanField(data.feature, data.value);
+    }
+    return point;
   }
 }

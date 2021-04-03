@@ -2,8 +2,8 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "type": "typescript",
             "label": "smarthomelib: build",
+            "type": "typescript",
             "group": "build",
             "tsconfig": "tsconfig.json",
             "problemMatcher": [
@@ -11,20 +11,18 @@
             ]
         },
         {
+            "label": "smarthomelib: format",
             "type": "npm",
             "script": "format",
-            "problemMatcher": [],
-            "label": "npm: format",
-            "detail": "prettier --write \"src/**/*.ts\" \"src/**/*.js\""
+            "problemMatcher": []
         },
         {
+            "label": "smarthomelib: lint",
             "type": "npm",
             "script": "lint",
             "problemMatcher": [
                 "$eslint-stylish"
-            ],
-            "label": "npm: lint",
-            "detail": "eslint src --ext .ts",
+            ]
         }
     ]
 }
