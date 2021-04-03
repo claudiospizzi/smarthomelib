@@ -1,10 +1,9 @@
 {
   "name": "smarthomelib",
   "version": "0.3.0",
-  "description": "TypeScript library to integrate various devices into a Loxone smart home.",
+  "description": "TypeScript library to integrate various devices into a smart home.",
   "keywords": [
     "smarthome",
-    "loxone",
     "mqtt",
     "influxdb"
   ],

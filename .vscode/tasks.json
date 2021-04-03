@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "smarthomelib: build",
+            "label": "build",
             "type": "typescript",
             "group": "build",
             "tsconfig": "tsconfig.json",
@@ -11,13 +11,13 @@
             ]
         },
         {
-            "label": "smarthomelib: format",
+            "label": "format",
             "type": "npm",
             "script": "format",
             "problemMatcher": []
         },
         {
-            "label": "smarthomelib: lint",
+            "label": "lint",
             "type": "npm",
             "script": "lint",
             "problemMatcher": [
