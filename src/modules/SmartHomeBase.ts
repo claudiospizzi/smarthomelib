@@ -3,12 +3,32 @@ import { ISignal, SignalDispatcher } from 'strongly-typed-events';
 import { ISimpleEvent, SimpleEventDispatcher } from 'strongly-typed-events';
 
 /**
+ * A smart home status message.
+ */
+export interface StatusMessage {
+  system: string;
+  room: string;
+  device: string;
+  feature: string;
+  value: string | number | boolean;
+}
+
+/**
+ * A smart home action message.
+ */
+export interface ActionMessage {
+  system: string;
+  room: string;
+  device: string;
+  feature: string;
+  action: string;
+}
+
+/**
  * Constructor options for the smart home base.
  */
 export interface SmartHomeBaseOption {
   name: string;
-  localEndpoint: string | undefined;
-  remoteEndpoint: string | undefined;
 }
 
 /**
@@ -17,16 +37,14 @@ export interface SmartHomeBaseOption {
 export abstract class SmartHomeBase {
   private logger: Logger;
 
-  private localEndpoint: string | undefined;
-  private remoteEndpoint: string | undefined;
+  private initialized = false;
 
-  private onBindDispatcher: SignalDispatcher;
-  private onUnbindDispatcher: SignalDispatcher;
-  private onConnectDispatcher: SignalDispatcher;
-  private onDisconnectDispatcher: SignalDispatcher;
-  private onInfoDispatcher: SimpleEventDispatcher<string>;
-  private onWarningDispatcher: SimpleEventDispatcher<string>;
-  private onErrorDispatcher: SimpleEventDispatcher<Error>;
+  protected name: string;
+
+  private onInitializeDispatcher = new SignalDispatcher();
+  private onInfoDispatcher = new SimpleEventDispatcher<string>();
+  private onWarningDispatcher = new SimpleEventDispatcher<string>();
+  private onErrorDispatcher = new SimpleEventDispatcher<string | Error>();
 
   /**
    * Initialize the base of a new smart home object.
@@ -35,80 +53,33 @@ export abstract class SmartHomeBase {
   constructor(option: SmartHomeBaseOption) {
     this.logger = new Logger({ name: option.name });
 
-    this.localEndpoint = option.localEndpoint;
-    this.remoteEndpoint = option.remoteEndpoint;
+    this.name = option.name;
 
-    this.onBindDispatcher = new SignalDispatcher();
-    this.onUnbindDispatcher = new SignalDispatcher();
-    this.onConnectDispatcher = new SignalDispatcher();
-    this.onDisconnectDispatcher = new SignalDispatcher();
-    this.onInfoDispatcher = new SimpleEventDispatcher<string>();
-    this.onWarningDispatcher = new SimpleEventDispatcher<string>();
-    this.onErrorDispatcher = new SimpleEventDispatcher<Error>();
-
-    this.onBindEvent.subscribe(() => this.logger.info(`Bind on ${this.localEndpoint}`));
-    this.onUnbindEvent.subscribe(() => this.logger.info(`Unbind of ${this.localEndpoint}`));
-    this.onConnectEvent.subscribe(() => this.logger.info(`Connected to ${this.remoteEndpoint}`));
-    this.onDisconnectEvent.subscribe(() => this.logger.info(`Disconnected from ${this.remoteEndpoint}`));
+    this.onInitializeEvent.subscribe(() => this.logger.info(`${this.name} initialize`));
     this.onInfoEvent.subscribe((info) => this.logger.info(info));
     this.onWarningEvent.subscribe((warning) => this.logger.warn(warning));
     this.onErrorEvent.subscribe((error) => this.logger.error(error));
   }
 
-  /**
-   * Fire the server bind event.
-   */
-  protected onBind(): void {
-    this.onBindDispatcher.dispatch();
+  protected get isInitialized(): boolean {
+    return this.initialized;
   }
 
   /**
-   * The server bind event.
+   * Fire the initialize event.
    */
-  public get onBindEvent(): ISignal {
-    return this.onBindDispatcher.asEvent();
+  protected onInitialize(): void {
+    if (!this.initialized) {
+      this.onInitializeDispatcher.dispatch();
+      this.initialized = true;
+    }
   }
 
   /**
-   * Fire the server unbind event.
+   * The initialize event.
    */
-  protected onUnbind(): void {
-    this.onUnbindDispatcher.dispatch();
-  }
-
-  /**
-   * The server unbind event.
-   */
-  public get onUnbindEvent(): ISignal {
-    return this.onUnbindDispatcher.asEvent();
-  }
-
-  /**
-   * Fire the server connect event.
-   */
-  protected onConnect(): void {
-    this.onConnectDispatcher.dispatch();
-  }
-
-  /**
-   * The client connect event.
-   */
-  public get onConnectEvent(): ISignal {
-    return this.onConnectDispatcher.asEvent();
-  }
-
-  /**
-   * Fire the server disconnect event.
-   */
-  protected onDisconnect(): void {
-    this.onDisconnectDispatcher.dispatch();
-  }
-
-  /**
-   * The client disconnect event.
-   */
-  public get onDisconnectEvent(): ISignal {
-    return this.onDisconnectDispatcher.asEvent();
+  public get onInitializeEvent(): ISignal {
+    return this.onInitializeDispatcher.asEvent();
   }
 
   /**
@@ -149,7 +120,7 @@ export abstract class SmartHomeBase {
   /**
    * Event if any error has occurred.
    */
-  public get onErrorEvent(): ISimpleEvent<Error> {
+  public get onErrorEvent(): ISimpleEvent<string | Error> {
     return this.onErrorDispatcher.asEvent();
   }
 }

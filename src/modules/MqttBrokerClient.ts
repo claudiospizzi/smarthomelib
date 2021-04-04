@@ -1,93 +1,68 @@
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
-import { SmartHomeBase } from './SmartHomeBase';
+import { ActionMessage, StatusMessage } from './SmartHomeBase';
+import { SmartHomeClientBase } from './SmartHomeClientBase';
 
 /**
- * Constructor options for the MQTT broker.
+ * Constructor options for the MQTT broker client.
  */
-export interface MqttBrokerOption {
+export interface MqttBrokerClientOption {
   host: string;
   port: number;
   system: string;
 }
 
 /**
- * A smart home MQTT status message.
+ * Class representing a smart home MQTT broker client.
  */
-export interface MqttBrokerStatusMessage {
-  system: string;
-  room: string;
-  device: string;
-  feature: string;
-  value: string | number | boolean;
-}
-
-/**
- * A smart home MQTT action message.
- */
-export interface MqttBrokerActionMessage {
-  system: string;
-  room: string;
-  device: string;
-  feature: string;
-  action: string;
-}
-
-/**
- * Class representing a smart home MQTT broker.
- */
-export class MqttBroker extends SmartHomeBase {
+export class MqttBrokerClient extends SmartHomeClientBase {
   private client?: MqttClient;
 
   private url: string;
   private system: string;
 
-  private onActionMessageDispatcher: EventDispatcher<MqttBroker, MqttBrokerActionMessage>;
-  private onStatusMessageDispatcher: EventDispatcher<MqttBroker, MqttBrokerStatusMessage>;
+  private onActionMessageDispatcher = new EventDispatcher<MqttBrokerClient, ActionMessage>();
+  private onStatusMessageDispatcher = new EventDispatcher<MqttBrokerClient, StatusMessage>();
 
   /**
-   * Initialize the MQTT broker.
+   * Create the MQTT broker client object.
    * @param option Connection option.
    */
-  constructor(option: MqttBrokerOption) {
+  constructor(option: MqttBrokerClientOption) {
     super({
-      name: 'MqttBroker',
-      localEndpoint: undefined,
+      name: 'MQTT broker client',
       remoteEndpoint: `mqtt://${option.host}:${option.port}`,
     });
 
     this.url = `mqtt://${option.host}:${option.port}`;
     this.system = option.system;
-
-    this.onActionMessageDispatcher = new EventDispatcher<MqttBroker, MqttBrokerActionMessage>();
-    this.onStatusMessageDispatcher = new EventDispatcher<MqttBroker, MqttBrokerStatusMessage>();
   }
 
   /**
    * Fire the action message event.
    */
-  private onActionMessage(message: MqttBrokerActionMessage): void {
+  private onActionMessage(message: ActionMessage): void {
     this.onActionMessageDispatcher.dispatch(this, message);
   }
 
   /**
    * The action message event.
    */
-  public get onActionMessageEvent(): IEvent<MqttBroker, MqttBrokerActionMessage> {
+  public get onActionMessageEvent(): IEvent<MqttBrokerClient, ActionMessage> {
     return this.onActionMessageDispatcher.asEvent();
   }
 
   /**
    * Fire the status message event.
    */
-  private onStatusMessage(message: MqttBrokerStatusMessage): void {
+  private onStatusMessage(message: StatusMessage): void {
     this.onStatusMessageDispatcher.dispatch(this, message);
   }
 
   /**
    * The status message event.
    */
-  public get onStatusMessageEvent(): IEvent<MqttBroker, MqttBrokerStatusMessage> {
+  public get onStatusMessageEvent(): IEvent<MqttBrokerClient, StatusMessage> {
     return this.onStatusMessageDispatcher.asEvent();
   }
 
@@ -95,8 +70,7 @@ export class MqttBroker extends SmartHomeBase {
    * Initialize the MQTT broker.
    */
   initialize(): void {
-    if (this.client === undefined) {
-      this.onInfo('Initialize MQTT broker');
+    if (!this.isInitialized) {
       this.client = mqttConnect(this.url, {
         will: {
           topic: `${this.system}/connected`,
@@ -118,6 +92,7 @@ export class MqttBroker extends SmartHomeBase {
       this.client.on('error', (error) => {
         this.onError(error);
       });
+      this.onInitialize();
     } else {
       this.onWarning('MQTT broker already initialized.');
     }
@@ -125,7 +100,7 @@ export class MqttBroker extends SmartHomeBase {
 
   private handleMessage(topic: string, message: string): void {
     const topics: string[] = message.split('/');
-    if (topics.length === 4 && MqttBroker.isValidJSON(message)) {
+    if (topics.length === 4 && MqttBrokerClient.isValidJSON(message)) {
       this.onStatusMessage({
         system: topics[0],
         room: topics[1],
@@ -194,7 +169,7 @@ export class MqttBroker extends SmartHomeBase {
    * @param message The message to publish.
    * @param retain Optional flag to retain the message in the broker.
    */
-  publishAction(message: MqttBrokerActionMessage, retain = false): void {
+  publishAction(message: ActionMessage, retain = false): void {
     if (this.client !== undefined) {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}/${message.action}`;
       this.client.publish(topic, JSON.stringify({ ts: Date.now() }), { retain: retain, qos: 2 });
@@ -208,7 +183,7 @@ export class MqttBroker extends SmartHomeBase {
    * @param message The message to publish.
    * @param retain Optional flag to retain the message in the broker.
    */
-  publishStatus(message: MqttBrokerStatusMessage, retain = false): void {
+  publishStatus(message: StatusMessage, retain = false): void {
     if (this.client !== undefined) {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}`;
       this.client.publish(topic, JSON.stringify({ ts: Date.now(), val: message.value }), { retain: retain, qos: 2 });
