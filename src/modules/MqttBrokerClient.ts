@@ -30,7 +30,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    */
   constructor(option: MqttBrokerClientOption) {
     super({
-      name: 'MQTT broker client',
+      name: `MqttBrokerClient(${option.host})`,
       remoteEndpoint: `mqtt://${option.host}:${option.port}`,
     });
 
@@ -90,11 +90,11 @@ export class MqttBrokerClient extends SmartHomeClientBase {
         this.handleMessage(topic, message.toString());
       });
       this.client.on('error', (error) => {
-        this.onError(error);
+        this.logger.error(error);
       });
       this.onInitialize();
     } else {
-      this.onWarning('MQTT broker already initialized.');
+      this.logger.warn('Already initialized.');
     }
   }
 
@@ -117,7 +117,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
         action: topics[4],
       });
     } else {
-      this.onWarning(`Unknown message received on topic '${topic}': ${message}`);
+      this.logger.warn(`Unknown message received on topic '${topic}': ${message}`);
     }
   }
 
@@ -144,7 +144,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       const topic = `${system}/${room}/${device}/${feature}/${action}`;
       this.client.subscribe(topic);
     } else {
-      this.onWarning('MQTT broker not initialized, unable to subscribe to action message.');
+      this.logger.warn('Not initialized, unable to subscribe to action message.');
     }
   }
 
@@ -160,7 +160,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       const topic = `${system}/${room}/${device}/${feature}`;
       this.client.subscribe(topic);
     } else {
-      this.onWarning('MQTT broker not initialized, unable to subscribe to status message.');
+      this.logger.warn('Not initialized, unable to subscribe to status message.');
     }
   }
 
@@ -174,7 +174,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}/${message.action}`;
       this.client.publish(topic, JSON.stringify({ ts: Date.now() }), { retain: retain, qos: 2 });
     } else {
-      this.onWarning('MQTT broker not initialized, unable to publish the action message.');
+      this.logger.warn('Not initialized, unable to publish the action message.');
     }
   }
 
@@ -188,7 +188,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}`;
       this.client.publish(topic, JSON.stringify({ ts: Date.now(), val: message.value }), { retain: retain, qos: 2 });
     } else {
-      this.onWarning('MQTT broker not initialized, unable to publish the status message.');
+      this.logger.warn('Not initialized, unable to publish the status message.');
     }
   }
 
@@ -200,7 +200,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     if (this.client !== undefined) {
       this.client.publish(`${this.system}/connected`, connected, { retain: true, qos: 2 });
     } else {
-      this.onWarning('MQTT broker not initialized, unable to publish the connection state.');
+      this.logger.warn('Not initialized, unable to publish the connection state.');
     }
   }
 }

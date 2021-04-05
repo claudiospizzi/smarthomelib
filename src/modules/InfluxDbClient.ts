@@ -35,7 +35,7 @@ export class InfluxDbClient extends SmartHomeClientBase {
    */
   constructor(option: InfluxDbClientOption) {
     super({
-      name: 'InfluxDB client',
+      name: `InfluxDbClient(${option.host})`,
       remoteEndpoint: `${option.protocol}://${option.host}:${option.port}`,
     });
 
@@ -63,9 +63,11 @@ export class InfluxDbClient extends SmartHomeClientBase {
       this.onInitialize();
       // Setup the test connection interval and invoke a test connection right now.
       this.testConnection();
-      setInterval(this.testConnection, 10000);
+      setInterval(() => {
+        this.testConnection();
+      }, 10000);
     } else {
-      this.onWarning(`${this.name} already initialized.`);
+      this.logger.warn('Already initialized.');
     }
   }
 
@@ -80,11 +82,11 @@ export class InfluxDbClient extends SmartHomeClientBase {
           this.onConnect();
         })
         .catch((error) => {
-          this.onError(error);
+          this.logger.error(error);
           this.onDisconnect();
         });
     } else {
-      this.onWarning(`${this.name} not initialized, unable to test connection.`);
+      this.logger.warn('Not initialized, unable to test connection.');
     }
   }
 
@@ -97,10 +99,10 @@ export class InfluxDbClient extends SmartHomeClientBase {
       try {
         this.clientWriteApi.writePoint(InfluxDbClient.generatePoint(message));
       } catch (error) {
-        this.onError(error);
+        this.logger.error(error);
       }
     } else {
-      this.onWarning(`${this.name} not initialized, unable to write measurement.`);
+      this.logger.warn('Not initialized, unable to write measurement.');
     }
   }
 

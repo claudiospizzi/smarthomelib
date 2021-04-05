@@ -30,8 +30,8 @@ export class SmartHomeServerBase extends SmartHomeBase {
 
     this.localEndpoint = option.localEndpoint;
 
-    this.onBindEvent.subscribe(() => this.onInfo(`${this.name} bind on ${this.localEndpoint}`));
-    this.onUnbindEvent.subscribe(() => this.onInfo(`${this.name} unbind of ${this.localEndpoint}`));
+    this.onBindEvent.subscribe(() => this.logger.info(`Bind on ${this.localEndpoint}`));
+    this.onUnbindEvent.subscribe(() => this.logger.info(`Unbind of ${this.localEndpoint}`));
   }
 
   /**

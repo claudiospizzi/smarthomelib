@@ -30,8 +30,8 @@ export class SmartHomeClientBase extends SmartHomeBase {
 
     this.remoteEndpoint = option.remoteEndpoint;
 
-    this.onConnectEvent.subscribe(() => this.onInfo(`${this.name} connect to ${this.remoteEndpoint}`));
-    this.onDisconnectEvent.subscribe(() => this.onInfo(`${this.name} disconnect from ${this.remoteEndpoint}`));
+    this.onConnectEvent.subscribe(() => this.logger.info(`Connect to ${this.remoteEndpoint}`));
+    this.onDisconnectEvent.subscribe(() => this.logger.info(`Disconnect from ${this.remoteEndpoint}`));
   }
 
   /**
