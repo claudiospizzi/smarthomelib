@@ -1,7 +1,7 @@
+import { ActionMessage, StatusMessage } from './../bases/SmartHomeBase';
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
-import { ActionMessage, StatusMessage } from './SmartHomeBase';
-import { SmartHomeClientBase } from './SmartHomeClientBase';
+import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
 
 /**
  * Constructor options for the MQTT broker client.

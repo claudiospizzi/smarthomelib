@@ -1,5 +1,5 @@
-import { Logger } from 'tslog';
 import { ISignal, SignalDispatcher } from 'strongly-typed-events';
+import { Logger } from 'tslog';
 
 /**
  * A smart home status message.
@@ -34,10 +34,9 @@ export interface SmartHomeBaseOption {
  * Base class for a smart home server and/or client.
  */
 export abstract class SmartHomeBase {
-  protected logger: Logger;
-
   private initialized = false;
 
+  protected logger: Logger;
   protected name: string;
 
   private onInitializeDispatcher = new SignalDispatcher();
@@ -54,6 +53,9 @@ export abstract class SmartHomeBase {
     this.onInitializeEvent.subscribe(() => this.logger.info('Initialize'));
   }
 
+  /**
+   * Get the current initialization state.
+   */
   protected get isInitialized(): boolean {
     return this.initialized;
   }
@@ -71,7 +73,7 @@ export abstract class SmartHomeBase {
   /**
    * The initialize event.
    */
-  public get onInitializeEvent(): ISignal {
+   protected get onInitializeEvent(): ISignal {
     return this.onInitializeDispatcher.asEvent();
   }
 }

@@ -1,6 +1,6 @@
 import { InfluxDB, Point, QueryApi, WriteApi } from '@influxdata/influxdb-client';
-import { StatusMessage } from './SmartHomeBase';
-import { SmartHomeClientBase } from './SmartHomeClientBase';
+import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
+import { StatusMessage } from './../bases/SmartHomeBase';
 
 /**
  * Constructor options for the InfluxDB client.
@@ -51,8 +51,9 @@ export class InfluxDbClient extends SmartHomeClientBase {
    */
   initialize(): void {
     if (!this.isInitialized) {
-      // Initialize the InfluxDB client with all required options and set the
-      // query and write apis, so that they are ready to use.
+      // Initialize the InfluxDB client with all
+      // required options and set the query and
+      // write apis, so that they are ready to use.
       this.client = new InfluxDB({
         url: this.url,
         token: this.token,
@@ -61,7 +62,8 @@ export class InfluxDbClient extends SmartHomeClientBase {
       this.clientQueryApi = this.client.getQueryApi(this.org);
       this.clientWriteApi = this.client.getWriteApi(this.org, this.bucket);
       this.onInitialize();
-      // Setup the test connection interval and invoke a test connection right now.
+      // Setup the test connection interval and
+      // invoke a test connection right now.
       this.testConnection();
       setInterval(() => {
         this.testConnection();
