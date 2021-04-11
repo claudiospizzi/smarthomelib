@@ -73,7 +73,7 @@ export abstract class SmartHomeBase {
   /**
    * The initialize event.
    */
-   protected get onInitializeEvent(): ISignal {
+  protected get onInitializeEvent(): ISignal {
     return this.onInitializeDispatcher.asEvent();
   }
 }
