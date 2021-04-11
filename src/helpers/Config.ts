@@ -1,6 +1,7 @@
-import { Logger } from 'tslog';
 import { InfluxDbClientOption } from '../modules/InfluxDb';
+import { Logger } from 'tslog';
 import { MqttBrokerClientOption } from '../modules/MqttBroker';
+import { readFileSync } from 'fs';
 
 /**
  * Module data with name and version.
@@ -81,6 +82,21 @@ export class Config<T> {
    */
   public get app(): T {
     return this.appOption;
+  }
+
+  /**
+   * Load the content and parse it as JSON.
+   * @param path The file path.
+   * @returns The parsed object.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static loadJsonFile(path: string): any {
+    try {
+      const data = readFileSync(path);
+      return JSON.parse(data.toString());
+    } catch (error) {
+      throw `Failed to load config file ${path}: ${error}`;
+    }
   }
 
   /**
