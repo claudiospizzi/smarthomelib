@@ -2,6 +2,7 @@ import { InfluxDbClientOption } from '../modules/InfluxDb';
 import { Logger } from 'tslog';
 import { MqttBrokerClientOption } from '../modules/MqttBroker';
 import { readFileSync } from 'fs';
+import { resolve as resolvePath } from 'path';
 
 /**
  * Module data with name and version.
@@ -92,6 +93,7 @@ export class Config<T> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static loadJsonFile(path: string): any {
     try {
+      path = resolvePath(path);
       const data = readFileSync(path);
       return JSON.parse(data.toString());
     } catch (error) {
