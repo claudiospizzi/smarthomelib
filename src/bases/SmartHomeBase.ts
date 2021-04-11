@@ -28,6 +28,7 @@ export interface ActionMessage {
  */
 export interface SmartHomeBaseOption {
   name: string;
+  outdatedSec: number;
 }
 
 /**
@@ -35,11 +36,14 @@ export interface SmartHomeBaseOption {
  */
 export abstract class SmartHomeBase {
   private initialized = false;
+  private lastActivity = new Date(0);
 
   protected logger: Logger;
   protected name: string;
+  protected outdatedSec: number;
 
   private onInitializeDispatcher = new SignalDispatcher();
+  private onActivityDispatcher = new SignalDispatcher();
 
   /**
    * Initialize the base of a new smart home object.
@@ -49,8 +53,10 @@ export abstract class SmartHomeBase {
     this.logger = new Logger({ prefix: [option.name], displayFilePath: 'hidden', displayFunctionName: false }); // name: option.name,  ignoreStackLevels: 3 displayLoggerName: false,
 
     this.name = option.name;
+    this.outdatedSec = option.outdatedSec;
 
     this.onInitializeEvent.subscribe(() => this.logger.info('Initialize'));
+    this.onActivityDispatcher.subscribe(() => (this.lastActivity = new Date()));
   }
 
   /**
@@ -75,5 +81,27 @@ export abstract class SmartHomeBase {
    */
   protected get onInitializeEvent(): ISignal {
     return this.onInitializeDispatcher.asEvent();
+  }
+
+  /**
+   * Check if the smart home device is active.
+   */
+  protected get isActive(): boolean {
+    const outdated = new Date(Date.now() - this.outdatedSec * 1000);
+    return outdated < this.lastActivity;
+  }
+
+  /**
+   * Fire the activity event.
+   */
+  protected onActive(): void {
+    this.onActivityDispatcher.dispatch();
+  }
+
+  /**
+   * The activity event.
+   */
+  protected get onActivityEvent(): ISignal {
+    return this.onActivityDispatcher.asEvent();
   }
 }

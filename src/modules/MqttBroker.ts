@@ -17,6 +17,7 @@ export interface MqttBrokerClientOption {
  */
 export class MqttBrokerClient extends SmartHomeClientBase {
   private client?: MqttClient;
+  private subscriptions: Array<string> = [];
 
   private url: string;
   private system: string;
@@ -32,6 +33,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     super({
       name: `MqttBrokerClient(${option.host})`,
       remoteEndpoint: `mqtt://${option.host}:${option.port}`,
+      outdatedSec: 15,
     });
 
     this.url = `mqtt://${option.host}:${option.port}`;
@@ -81,7 +83,11 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       });
       this.client.on('connect', () => {
         this.publishConnected('1');
+        this.onActive();
         this.onConnect();
+        for (const topic of this.subscriptions) {
+          this.client?.subscribe(topic);
+        }
       });
       this.client.on('close', () => {
         this.onDisconnect();
@@ -93,8 +99,27 @@ export class MqttBrokerClient extends SmartHomeClientBase {
         this.logger.error(error);
       });
       this.onInitialize();
+      // Setup the test connection interval but
+      // don't invoke a test connection right now
+      // as the client will fire an connect event.
+      setInterval(() => {
+        this.testConnection();
+      }, 10000);
     } else {
       this.logger.warn('Already initialized.');
+    }
+  }
+
+  /**
+   * Test the connection to the MQTT broker.
+   */
+  private testConnection(): void {
+    if (this.isInitialized && this.client !== undefined) {
+      if (this.client.connected) {
+        this.onActive();
+      }
+    } else {
+      this.logger.warn('Not initialized, unable to test connection.');
     }
   }
 
@@ -140,11 +165,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * @param action The action. Default is any action.
    */
   subscribeAction(system = this.system, room = '+', device = '+', feature = '+', action = '+'): void {
+    const topic = `${system}/${room}/${device}/${feature}/${action}`;
+    this.subscriptions.push(topic);
     if (this.client !== undefined) {
-      const topic = `${system}/${room}/${device}/${feature}/${action}`;
       this.client.subscribe(topic);
-    } else {
-      this.logger.warn('Not initialized, unable to subscribe to action message.');
     }
   }
 
@@ -156,11 +180,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * @param feature The feature. Default is any feature.
    */
   subscribeStatus(system = this.system, room = '+', device = '+', feature = '+'): void {
+    const topic = `${system}/${room}/${device}/${feature}`;
+    this.subscriptions.push(topic);
     if (this.client !== undefined) {
-      const topic = `${system}/${room}/${device}/${feature}`;
       this.client.subscribe(topic);
-    } else {
-      this.logger.warn('Not initialized, unable to subscribe to status message.');
     }
   }
 

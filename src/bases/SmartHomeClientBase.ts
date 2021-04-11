@@ -7,6 +7,7 @@ import { SmartHomeBase } from './SmartHomeBase';
 export interface SmartHomeClientBaseOption {
   name: string;
   remoteEndpoint: string;
+  outdatedSec: number;
 }
 
 /**
@@ -26,7 +27,7 @@ export class SmartHomeClientBase extends SmartHomeBase {
    * @param option Client option.
    */
   constructor(option: SmartHomeClientBaseOption) {
-    super({ name: option.name });
+    super({ name: option.name, outdatedSec: option.outdatedSec });
 
     this.remoteEndpoint = option.remoteEndpoint;
 

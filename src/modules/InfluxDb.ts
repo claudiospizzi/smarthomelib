@@ -37,6 +37,7 @@ export class InfluxDbClient extends SmartHomeClientBase {
     super({
       name: `InfluxDbClient(${option.host})`,
       remoteEndpoint: `${option.protocol}://${option.host}:${option.port}`,
+      outdatedSec: 15,
     });
 
     this.url = `${option.protocol}://${option.host}:${option.port}`;
@@ -82,6 +83,7 @@ export class InfluxDbClient extends SmartHomeClientBase {
         .queryRaw('buckets()')
         .then(() => {
           this.onConnect();
+          this.onActive();
         })
         .catch((error) => {
           this.logger.error(error);
@@ -100,6 +102,7 @@ export class InfluxDbClient extends SmartHomeClientBase {
     if (this.isInitialized && this.clientWriteApi !== undefined) {
       try {
         this.clientWriteApi.writePoint(InfluxDbClient.generatePoint(message));
+        this.onActive();
       } catch (error) {
         this.logger.error(error);
       }
