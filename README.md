@@ -1,7 +1,8 @@
 # smarthomelib
 
-TypeScript library to integrate various devices into a smart home. The following
-projects are using this library:
+TypeScript library to integrate various smart home devices with each other. The
+core communication is realized with an MQTT broker. The following projects are
+using this library:
 
 - [smarthome4loxone](https://github.com/claudiospizzi/smarthome4loxone)
 - [smarthome4mystromswitch](https://github.com/claudiospizzi/smarthome4mystromswitch)
@@ -18,14 +19,25 @@ npm install smarthomelib
 ## Features
 
 The whole library is used to enable communication between smart home devices by
-using a core MQTT broker. The status and action messages (see below) are
-published on the MQTT broker with the following format:
+using a core MQTT broker. The status and action messages are published to the
+MQTT broker with the following format:
 
-- Status message:  
-  `<system>/<room>/<device>/<feature>`  
-  `{ "ts": 1618141403000, "value": <value> }`
-- Action message (empty value):  
-  `<system>/<room>/<device>/<feature>/<action>`  
+### Status Message
+
+Used to publish a device status to the MQTT broker.
+
+```data
+<system>/<room>/<device>/<feature>
+{ "ts": 1618141403000, "value": <value> }
+```
+
+### Action Message
+
+Used to command an action for a device via the MQTT broker.
+
+```data
+<system>/<room>/<device>/<feature>/<action>
+```
 
 ### Base types (interfaces)
 
