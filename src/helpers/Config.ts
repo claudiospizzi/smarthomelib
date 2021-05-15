@@ -22,7 +22,7 @@ export interface AppOption {
 /**
  * Base configuration.
  */
-export interface ConfigBase<T extends AppOption> {
+export interface ConfigBase<T> {
   logLevel: 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal' | undefined;
   mqtt: {
     host: string | undefined;
