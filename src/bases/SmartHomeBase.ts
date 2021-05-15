@@ -29,7 +29,7 @@ export interface ActionMessage {
 export interface SmartHomeBaseOption {
   name: string;
   outdatedSec: number;
-  logLevel: 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+  logLevel: 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal' | undefined;
 }
 
 /**
@@ -55,7 +55,7 @@ export abstract class SmartHomeBase {
       prefix: [option.name],
       displayFilePath: 'hidden',
       displayFunctionName: false,
-      minLevel: option.logLevel,
+      minLevel: option.logLevel ?? 'info',
     });
 
     this.name = option.name;

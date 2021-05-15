@@ -1,12 +1,12 @@
 import { InfluxDB, Point, QueryApi, WriteApi } from '@influxdata/influxdb-client';
 import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
 import { StatusMessage } from './../bases/SmartHomeBase';
-import { AppOption } from '../helpers/Config';
+import { LogLevelOption } from '../helpers/Config';
 
 /**
  * Constructor options for the InfluxDB client.
  */
-export interface InfluxDbClientOption extends AppOption {
+export interface InfluxDbClientOption extends LogLevelOption {
   host: string;
   port: number;
   protocol: 'http' | 'https';

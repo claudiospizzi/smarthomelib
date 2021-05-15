@@ -2,12 +2,12 @@ import { ActionMessage, StatusMessage } from './../bases/SmartHomeBase';
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
 import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
-import { AppOption } from '../helpers/Config';
+import { LogLevelOption } from '../helpers/Config';
 
 /**
  * Constructor options for the MQTT broker client.
  */
-export interface MqttBrokerClientOption extends AppOption {
+export interface MqttBrokerClientOption extends LogLevelOption {
   host: string;
   port: number;
   system: string;
