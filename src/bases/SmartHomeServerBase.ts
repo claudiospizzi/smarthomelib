@@ -1,13 +1,11 @@
 import { ISignal, SignalDispatcher } from 'ste-signals';
-import { SmartHomeBase } from './SmartHomeBase';
+import { SmartHomeBase, SmartHomeBaseOption } from './SmartHomeBase';
 
 /**
  * Constructor options for the smart home server.
  */
-export interface SmartHomeServerBaseOption {
-  name: string;
+export interface SmartHomeServerBaseOption extends SmartHomeBaseOption {
   localEndpoint: string;
-  outdatedSec: number;
 }
 
 /**
@@ -27,7 +25,7 @@ export class SmartHomeServerBase extends SmartHomeBase {
    * @param option Server option.
    */
   constructor(option: SmartHomeServerBaseOption) {
-    super({ name: option.name, outdatedSec: option.outdatedSec });
+    super(option);
 
     this.localEndpoint = option.localEndpoint;
 

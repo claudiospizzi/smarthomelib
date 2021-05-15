@@ -1,13 +1,11 @@
 import { ISignal, SignalDispatcher } from 'strongly-typed-events';
-import { SmartHomeBase } from './SmartHomeBase';
+import { SmartHomeBase, SmartHomeBaseOption } from './SmartHomeBase';
 
 /**
  * Constructor options for the smart home client.
  */
-export interface SmartHomeClientBaseOption {
-  name: string;
+export interface SmartHomeClientBaseOption extends SmartHomeBaseOption {
   remoteEndpoint: string;
-  outdatedSec: number;
 }
 
 /**
@@ -27,7 +25,7 @@ export class SmartHomeClientBase extends SmartHomeBase {
    * @param option Client option.
    */
   constructor(option: SmartHomeClientBaseOption) {
-    super({ name: option.name, outdatedSec: option.outdatedSec });
+    super(option);
 
     this.remoteEndpoint = option.remoteEndpoint;
 

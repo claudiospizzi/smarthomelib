@@ -1,11 +1,12 @@
 import { InfluxDB, Point, QueryApi, WriteApi } from '@influxdata/influxdb-client';
 import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
 import { StatusMessage } from './../bases/SmartHomeBase';
+import { AppOption } from '../helpers/Config';
 
 /**
  * Constructor options for the InfluxDB client.
  */
-export interface InfluxDbClientOption {
+export interface InfluxDbClientOption extends AppOption {
   host: string;
   port: number;
   protocol: 'http' | 'https';
@@ -38,6 +39,7 @@ export class InfluxDbClient extends SmartHomeClientBase {
       name: `InfluxDbClient(${option.host})`,
       remoteEndpoint: `${option.protocol}://${option.host}:${option.port}`,
       outdatedSec: 15,
+      logLevel: option.logLevel,
     });
 
     this.url = `${option.protocol}://${option.host}:${option.port}`;
@@ -82,10 +84,12 @@ export class InfluxDbClient extends SmartHomeClientBase {
       this.clientQueryApi
         .queryRaw('buckets()')
         .then(() => {
+          this.logger.trace('Connection test was successful.');
           this.onConnect();
           this.onActive();
         })
         .catch((error) => {
+          this.logger.trace('Connection test has failed.');
           this.logger.error(error);
           this.onDisconnect();
         });
@@ -101,7 +105,9 @@ export class InfluxDbClient extends SmartHomeClientBase {
   write(message: StatusMessage): void {
     if (this.isInitialized && this.clientWriteApi !== undefined) {
       try {
-        this.clientWriteApi.writePoint(InfluxDbClient.generatePoint(message));
+        const point = InfluxDbClient.generatePoint(message);
+        this.logger.debug(`Write a point to the database: ${point}`);
+        this.clientWriteApi.writePoint(point);
         this.onActive();
       } catch (error) {
         this.logger.error(error);

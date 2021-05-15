@@ -29,6 +29,7 @@ export interface ActionMessage {
 export interface SmartHomeBaseOption {
   name: string;
   outdatedSec: number;
+  logLevel: 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 }
 
 /**
@@ -50,7 +51,12 @@ export abstract class SmartHomeBase {
    * @param option Connection option.
    */
   constructor(option: SmartHomeBaseOption) {
-    this.logger = new Logger({ prefix: [option.name], displayFilePath: 'hidden', displayFunctionName: false }); // name: option.name,  ignoreStackLevels: 3 displayLoggerName: false,
+    this.logger = new Logger({
+      prefix: [option.name],
+      displayFilePath: 'hidden',
+      displayFunctionName: false,
+      minLevel: option.logLevel,
+    });
 
     this.name = option.name;
     this.outdatedSec = option.outdatedSec;

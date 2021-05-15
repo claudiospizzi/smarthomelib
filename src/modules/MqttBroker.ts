@@ -2,11 +2,12 @@ import { ActionMessage, StatusMessage } from './../bases/SmartHomeBase';
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
 import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
+import { AppOption } from '../helpers/Config';
 
 /**
  * Constructor options for the MQTT broker client.
  */
-export interface MqttBrokerClientOption {
+export interface MqttBrokerClientOption extends AppOption {
   host: string;
   port: number;
   system: string;
@@ -34,6 +35,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       name: `MqttBrokerClient(${option.host})`,
       remoteEndpoint: `mqtt://${option.host}:${option.port}`,
       outdatedSec: 15,
+      logLevel: option.logLevel,
     });
 
     this.url = `mqtt://${option.host}:${option.port}`;
@@ -116,7 +118,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private testConnection(): void {
     if (this.isInitialized && this.client !== undefined) {
       if (this.client.connected) {
+        this.logger.trace('Connection test was successful.');
         this.onActive();
+      } else {
+        this.logger.trace('Connection test has failed.');
       }
     } else {
       this.logger.warn('Not initialized, unable to test connection.');
@@ -124,6 +129,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   }
 
   private handleMessage(topic: string, message: string): void {
+    this.logger.debug(`Message received on topic '${topic}': ${message}`);
     const topics: string[] = message.split('/');
     if (topics.length === 4 && MqttBrokerClient.isValidJSON(message)) {
       this.onStatusMessage({
@@ -142,7 +148,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
         action: topics[4],
       });
     } else {
-      this.logger.warn(`Unknown message received on topic '${topic}': ${message}`);
+      this.logger.warn(`Failed to parse message received on topic '${topic}': ${message}`);
     }
   }
 
@@ -195,7 +201,9 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   publishAction(message: ActionMessage, retain = false): void {
     if (this.client !== undefined) {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}/${message.action}`;
-      this.client.publish(topic, JSON.stringify({ ts: Date.now() }), { retain: retain, qos: 2 });
+      const msg = JSON.stringify({ ts: Date.now() });
+      this.logger.debug(`Publish action message on topic '${topic}': ${msg}`);
+      this.client.publish(topic, msg, { retain: retain, qos: 2 });
     } else {
       this.logger.warn('Not initialized, unable to publish the action message.');
     }
@@ -209,7 +217,9 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   publishStatus(message: StatusMessage, retain = false): void {
     if (this.client !== undefined) {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}`;
-      this.client.publish(topic, JSON.stringify({ ts: Date.now(), val: message.value }), { retain: retain, qos: 2 });
+      const msg = JSON.stringify({ ts: Date.now(), val: message.value });
+      this.logger.debug(`Publish action message on topic '${topic}': ${msg}`);
+      this.client.publish(topic, msg, { retain: retain, qos: 2 });
     } else {
       this.logger.warn('Not initialized, unable to publish the status message.');
     }
