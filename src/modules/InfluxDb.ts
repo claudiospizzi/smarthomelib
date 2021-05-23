@@ -84,12 +84,12 @@ export class InfluxDbClient extends SmartHomeClientBase {
       this.clientQueryApi
         .queryRaw('buckets()')
         .then(() => {
-          this.logger.trace('Connection test was successful.');
+          this.logger.debug('InfluxDB connection test was successful.');
           this.onConnect();
           this.onActive();
         })
         .catch((error) => {
-          this.logger.trace('Connection test has failed.');
+          this.logger.debug('InfluxDB connection test has failed.');
           this.logger.error(error);
           this.onDisconnect();
         });

@@ -97,7 +97,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       this.client.on('connect', () => {
         this.onActive();
         this.onConnect();
-        this.client?.publish(`${this.system}/connected`, '1', { retain: true, qos: 2 });
+        this.publishDeviceConnected(false);
         for (const topic of this.subscriptions) {
           this.client?.subscribe(topic);
         }
@@ -129,10 +129,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private testConnection(): void {
     if (this.isInitialized && this.client !== undefined) {
       if (this.client.connected) {
-        this.logger.trace('Connection test was successful.');
+        this.logger.debug('MQTT broker connection test was successful.');
         this.onActive();
       } else {
-        this.logger.trace('Connection test has failed.');
+        this.logger.debug('MQTT broker connection test has failed.');
       }
     } else {
       this.logger.warn('Not initialized, unable to test connection.');
@@ -229,7 +229,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     if (this.client !== undefined) {
       const topic = `${message.system}/${message.room}/${message.device}/${message.feature}`;
       const msg = JSON.stringify({ ts: Date.now(), val: message.value });
-      this.logger.debug(`Publish action message on topic '${topic}': ${msg}`);
+      this.logger.debug(`Publish status message on topic '${topic}': ${msg}`);
       this.client.publish(topic, msg, { retain: retain, qos: 2 });
     } else {
       this.logger.warn('Not initialized, unable to publish the status message.');
@@ -240,9 +240,9 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * Publish the current connection state.
    * @param connected Connection status: 1 = having device/hardware issues, 2 = fully operational.
    */
-  publishDeviceConnected(connected: '1' | '2'): void {
+  private publishDeviceConnected(deviceConnected: boolean): void {
     if (this.client !== undefined) {
-      this.client.publish(`${this.system}/connected`, connected, { retain: true, qos: 2 });
+      this.client.publish(`${this.system}/connected`, deviceConnected ? '2' : '1', { retain: true, qos: 2 });
     } else {
       this.logger.warn('Not initialized, unable to publish the connection state.');
     }
@@ -260,11 +260,12 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * Function to check if the devices are connected.
    */
   private testDeviceConnected(): void {
-    if (this.client !== undefined) {
-      const connected = this.deviceConnectedCallback();
-      this.client.publish(`${this.system}/connected`, connected ? '2' : '1', { retain: true, qos: 2 });
+    const deviceConnected = this.deviceConnectedCallback();
+    this.publishDeviceConnected(deviceConnected);
+    if (deviceConnected) {
+      this.logger.debug('MQTT device connection test was successful.');
     } else {
-      this.logger.warn('Not initialized, unable to publish the connection state.');
+      this.logger.debug('MQTT device connection test has failed.');
     }
   }
 }
