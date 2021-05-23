@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is mainly based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.3.1
+
+* Fixed: Clean up logging messages
+
 ## 1.3.0
 
 * Added: Allow to check the base state (active, listing, connected) for public

@@ -119,7 +119,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
         this.testConnection();
       }, 10000);
     } else {
-      this.logger.warn('Already initialized.');
+      this.logger.warn('Initialization failed, already initialized.');
     }
   }
 
@@ -129,10 +129,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private testConnection(): void {
     if (this.isInitialized && this.client !== undefined) {
       if (this.client.connected) {
-        this.logger.debug('MQTT broker connection test was successful.');
+        this.logger.debug('Connection test was successful.');
         this.onActive();
       } else {
-        this.logger.debug('MQTT broker connection test has failed.');
+        this.logger.debug('Connection test has failed.');
       }
     } else {
       this.logger.warn('Not initialized, unable to test connection.');
@@ -263,9 +263,9 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     const deviceConnected = this.deviceConnectedCallback();
     this.publishDeviceConnected(deviceConnected);
     if (deviceConnected) {
-      this.logger.debug('MQTT device connection test was successful.');
+      this.logger.debug('Device connection test was successful.');
     } else {
-      this.logger.debug('MQTT device connection test has failed.');
+      this.logger.debug('Device connection test has failed.');
     }
   }
 }

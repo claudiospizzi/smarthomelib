@@ -72,7 +72,7 @@ export class InfluxDbClient extends SmartHomeClientBase {
         this.testConnection();
       }, 10000);
     } else {
-      this.logger.warn('Already initialized.');
+      this.logger.warn('Initialization failed, already initialized.');
     }
   }
 
@@ -84,12 +84,12 @@ export class InfluxDbClient extends SmartHomeClientBase {
       this.clientQueryApi
         .queryRaw('buckets()')
         .then(() => {
-          this.logger.debug('InfluxDB connection test was successful.');
+          this.logger.debug('Connection test was successful.');
           this.onConnect();
           this.onActive();
         })
         .catch((error) => {
-          this.logger.debug('InfluxDB connection test has failed.');
+          this.logger.debug('Connection test has failed.');
           this.logger.error(error);
           this.onDisconnect();
         });
