@@ -68,7 +68,7 @@ export abstract class SmartHomeBase {
   /**
    * Get the current initialization state.
    */
-  protected get isInitialized(): boolean {
+  get isInitialized(): boolean {
     return this.initialized;
   }
 
@@ -92,7 +92,7 @@ export abstract class SmartHomeBase {
   /**
    * Check if the smart home device is active.
    */
-  protected get isActive(): boolean {
+  get isActive(): boolean {
     const outdated = new Date(Date.now() - this.outdatedSec * 1000);
     return outdated < this.lastActivity;
   }

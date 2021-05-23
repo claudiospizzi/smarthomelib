@@ -36,7 +36,7 @@ export class SmartHomeServerBase extends SmartHomeBase {
   /**
    * Flag if the server is listening.
    */
-  protected get isListening(): boolean {
+  get isListening(): boolean {
     return this.listening;
   }
 

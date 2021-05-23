@@ -36,7 +36,7 @@ export class SmartHomeClientBase extends SmartHomeBase {
   /**
    * Flag if the client is connected.
    */
-  protected get isConnected(): boolean {
+  get isConnected(): boolean {
     return this.connected;
   }
 
