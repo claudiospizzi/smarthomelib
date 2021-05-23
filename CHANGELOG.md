@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is mainly based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.2.0
+
+* Added: Callback function for device connection state in the MqttClient
+
 ## 1.1.2
 
 * Fixed: Allow undefined log level, fall back to info

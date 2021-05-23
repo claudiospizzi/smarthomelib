@@ -22,24 +22,7 @@ The whole library is used to enable communication between smart home devices by
 using a core MQTT broker. The status and action messages are published to the
 MQTT broker with the following format:
 
-### Status Message
-
-Used to publish a device status to the MQTT broker.
-
-```data
-<system>/<room>/<device>/<feature>
-{ "ts": 1618141403000, "value": <value> }
-```
-
-### Action Message
-
-Used to command an action for a device via the MQTT broker.
-
-```data
-<system>/<room>/<device>/<feature>/<action>
-```
-
-### Base types (interfaces)
+### Status Message type
 
 The `StatusMessage` type represents a message delivered within the smart home
 to update the state of a device feature. For example publish the current
@@ -87,6 +70,15 @@ let statusMessage3 = {
 };
 ```
 
+And this is the status message representation in MQTT:
+
+```data
+<system>/<room>/<device>/<feature>
+{ "ts": 1618141403000, "value": <value> }
+```
+
+### Action Message type
+
 The `ActionMessage` is similar to the status message, but it is used to change
 the state of a smart home device. So it's a command to perform an action by the
 device.
@@ -125,11 +117,48 @@ let statusMessage2 = {
 };
 ```
 
-### Base classes
+And this is the action message representation in MQTT:
+
+```data
+<system>/<room>/<device>/<feature>/<action>
+```
+
+### Server & Client classes
 
 The base classes `SmartHomeServerBase` and `SmartHomeClientBase` are available
 to extend the smart home system to a broader range of device types. Check the
-linked project for examples.
+linked project for detailed examples.
+
+#### SmartHomeBase
+
+The top most base class for the smart home devices. It can fire the following
+events:
+
+- **onInitializeEvent**  
+  Event if the smart home device is initialized.
+
+- **onActivityEvent**  
+  If any activity has happened, this event is triggered.
+
+#### SmartHomeServerBase
+
+Events for the server base class:
+
+- **onBindEvent**  
+  Event if the server starts listening on a port.
+
+- **onUnbindEvent**  
+  Event if the server stops listening on a port.
+
+#### SmartHomeClientBase
+
+Events for the client base class:
+
+- **onConnectEvent**  
+  Event if the client is connected to the service.
+
+- **onDisconnectedEvent**  
+  Event if the client is disconnected of the service.
 
 ### MQTT broker client
 

@@ -5,6 +5,11 @@ import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
 import { LogLevelOption } from '../helpers/Config';
 
 /**
+ * Type used as connection callback to check, if the devices are connected.
+ */
+export type MqttBrokerClientDeviceConnectedCallback = () => boolean;
+
+/**
  * Constructor options for the MQTT broker client.
  */
 export interface MqttBrokerClientOption extends LogLevelOption {
@@ -26,6 +31,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private onActionMessageDispatcher = new EventDispatcher<MqttBrokerClient, ActionMessage>();
   private onStatusMessageDispatcher = new EventDispatcher<MqttBrokerClient, StatusMessage>();
 
+  private deviceConnectedCallback: MqttBrokerClientDeviceConnectedCallback = () => {
+    return false;
+  };
+
   /**
    * Create the MQTT broker client object.
    * @param option Connection option.
@@ -40,6 +49,8 @@ export class MqttBrokerClient extends SmartHomeClientBase {
 
     this.url = `mqtt://${option.host}:${option.port}`;
     this.system = option.system;
+
+    setInterval(() => this.testDeviceConnected(), 10000);
   }
 
   /**
@@ -84,9 +95,9 @@ export class MqttBrokerClient extends SmartHomeClientBase {
         },
       });
       this.client.on('connect', () => {
-        this.publishConnected('1');
         this.onActive();
         this.onConnect();
+        this.client?.publish(`${this.system}/connected`, '1', { retain: true, qos: 2 });
         for (const topic of this.subscriptions) {
           this.client?.subscribe(topic);
         }
@@ -229,9 +240,29 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * Publish the current connection state.
    * @param connected Connection status: 1 = having device/hardware issues, 2 = fully operational.
    */
-  publishConnected(connected: '1' | '2'): void {
+  publishDeviceConnected(connected: '1' | '2'): void {
     if (this.client !== undefined) {
       this.client.publish(`${this.system}/connected`, connected, { retain: true, qos: 2 });
+    } else {
+      this.logger.warn('Not initialized, unable to publish the connection state.');
+    }
+  }
+
+  /**
+   * Set the callback used to determine if the devices are connected.
+   * @param deviceConnectedCallback The callback function.
+   */
+  setDeviceConnectedCallback(deviceConnectedCallback: MqttBrokerClientDeviceConnectedCallback): void {
+    this.deviceConnectedCallback = deviceConnectedCallback;
+  }
+
+  /**
+   * Function to check if the devices are connected.
+   */
+  private testDeviceConnected(): void {
+    if (this.client !== undefined) {
+      const connected = this.deviceConnectedCallback();
+      this.client.publish(`${this.system}/connected`, connected ? '2' : '1', { retain: true, qos: 2 });
     } else {
       this.logger.warn('Not initialized, unable to publish the connection state.');
     }
