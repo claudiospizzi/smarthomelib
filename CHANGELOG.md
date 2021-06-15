@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is mainly based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.5.1
+
+* Fixed: Use the system of the Config class in the MQTT broker
+
 ## 1.5.0
 
 * Changed: Add a static field for the system name

@@ -2,6 +2,7 @@ import { ActionMessage, StatusMessage } from './../bases/SmartHomeBase';
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
 import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
+import { Config } from '../helpers/Config';
 
 /**
  * Type used as connection callback to check, if the devices are connected.
@@ -14,7 +15,6 @@ export type MqttBrokerClientDeviceConnectedCallback = () => boolean;
 export interface MqttBrokerClientOption {
   host: string;
   port: number;
-  system: string;
 }
 
 /**
@@ -25,7 +25,6 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private subscriptions: Array<string> = [];
 
   private url: string;
-  private system: string;
 
   private onActionMessageDispatcher = new EventDispatcher<MqttBrokerClient, ActionMessage>();
   private onStatusMessageDispatcher = new EventDispatcher<MqttBrokerClient, StatusMessage>();
@@ -46,7 +45,6 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     });
 
     this.url = `mqtt://${option.host}:${option.port}`;
-    this.system = option.system;
 
     setInterval(() => this.testDeviceConnected(), 10000);
   }
@@ -86,7 +84,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     if (!this.isInitialized) {
       this.client = mqttConnect(this.url, {
         will: {
-          topic: `${this.system}/connected`,
+          topic: `${Config.system}/connected`,
           payload: '0',
           retain: true,
           qos: 2,
@@ -179,7 +177,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * @param feature The feature. Default is any feature.
    * @param action The action. Default is any action.
    */
-  subscribeAction(system = this.system, room = '+', device = '+', feature = '+', action = '+'): void {
+  subscribeAction(system = Config.system, room = '+', device = '+', feature = '+', action = '+'): void {
     const topic = `${system}/${room}/${device}/${feature}/${action}`;
     this.subscriptions.push(topic);
     if (this.client !== undefined) {
@@ -194,7 +192,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * @param device The device. Default is any device.
    * @param feature The feature. Default is any feature.
    */
-  subscribeStatus(system = this.system, room = '+', device = '+', feature = '+'): void {
+  subscribeStatus(system = Config.system, room = '+', device = '+', feature = '+'): void {
     const topic = `${system}/${room}/${device}/${feature}`;
     this.subscriptions.push(topic);
     if (this.client !== undefined) {
@@ -240,7 +238,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    */
   private publishDeviceConnected(deviceConnected: boolean): void {
     if (this.client !== undefined) {
-      this.client.publish(`${this.system}/connected`, deviceConnected ? '2' : '1', { retain: true, qos: 2 });
+      this.client.publish(`${Config.system}/connected`, deviceConnected ? '2' : '1', { retain: true, qos: 2 });
     } else {
       this.logger.warn('Not initialized, unable to publish the connection state.');
     }
