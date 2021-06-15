@@ -67,7 +67,6 @@ export class Config<T> {
     this.mqttOption = {
       host: Config.useValueOrDefault('mqtt.host', config.mqtt.host, 'localhost'),
       port: Config.useValueOrDefault('mqtt.port', config.mqtt.port, 1883),
-      system: Config.useValueOrDefault('mqtt.system', config.mqtt.system, module.name),
     };
     this.influxOption = {
       host: Config.useValueOrDefault('influx.host', config.influx.host, 'localhost'),
