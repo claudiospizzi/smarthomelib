@@ -44,16 +44,22 @@ export interface ConfigBase<T> {
 export class Config<T> {
   private logger: Logger;
 
+  static system: string;
   static logLevel: LogLevel = 'info';
 
   private mqttOption: MqttBrokerClientOption;
   private influxOption: InfluxDbClientOption;
   private appOption: T;
 
-  constructor(module: ModuleData, logLevel: LogLevel, config: ConfigBase<T>) {
+  constructor(module: ModuleData, logLevel: LogLevel, system: string | undefined, config: ConfigBase<T>) {
     this.logger = new Logger({ displayFilePath: 'hidden', displayFunctionName: false });
     this.logger.info(`${module.name} ${module.version}`);
 
+    if (system !== undefined) {
+      Config.system = system;
+    } else {
+      Config.system = module.name;
+    }
     if (logLevel !== undefined) {
       Config.logLevel = logLevel;
     }
