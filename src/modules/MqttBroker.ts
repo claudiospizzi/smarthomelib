@@ -127,13 +127,13 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private testConnection(): void {
     if (this.isInitialized && this.client !== undefined) {
       if (this.client.connected) {
-        this.logger.debug('Connection test was successful.');
+        this.logger.debug('MQTT broker connection test was successful.');
         this.onActive();
       } else {
-        this.logger.debug('Connection test has failed.');
+        this.logger.debug('MQTT broker connection test has failed.');
       }
     } else {
-      this.logger.warn('Not initialized, unable to test connection.');
+      this.logger.warn('MQTT broker not initialized, unable to test connection.');
     }
   }
 
@@ -261,9 +261,9 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     const deviceConnected = this.deviceConnectedCallback();
     this.publishDeviceConnected(deviceConnected);
     if (deviceConnected) {
-      this.logger.debug('Device connection test was successful.');
+      this.logger.debug('Smart Home device connection test was successful.');
     } else {
-      this.logger.debug('Device connection test has failed.');
+      this.logger.debug('Smart Home device connection test has failed.');
     }
   }
 }

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.5.0
 
 * Changed: Add a static field for the system name
+* Changed: Optimize InfluxDB and MQTT broker log
 
 ## 1.4.1
 
