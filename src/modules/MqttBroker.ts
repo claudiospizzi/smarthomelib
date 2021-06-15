@@ -2,7 +2,6 @@ import { ActionMessage, StatusMessage } from './../bases/SmartHomeBase';
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
 import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
-import { LogLevelOption } from '../helpers/Config';
 
 /**
  * Type used as connection callback to check, if the devices are connected.
@@ -12,7 +11,7 @@ export type MqttBrokerClientDeviceConnectedCallback = () => boolean;
 /**
  * Constructor options for the MQTT broker client.
  */
-export interface MqttBrokerClientOption extends LogLevelOption {
+export interface MqttBrokerClientOption {
   host: string;
   port: number;
   system: string;
@@ -44,7 +43,6 @@ export class MqttBrokerClient extends SmartHomeClientBase {
       name: `MqttBrokerClient(${option.host})`,
       remoteEndpoint: `mqtt://${option.host}:${option.port}`,
       outdatedSec: 15,
-      logLevel: option.logLevel,
     });
 
     this.url = `mqtt://${option.host}:${option.port}`;

@@ -1,5 +1,6 @@
 import { ISignal, SignalDispatcher } from 'strongly-typed-events';
 import { Logger } from 'tslog';
+import { Config } from '../helpers/Config';
 
 /**
  * A smart home status message.
@@ -29,7 +30,6 @@ export interface ActionMessage {
 export interface SmartHomeBaseOption {
   name: string;
   outdatedSec: number;
-  logLevel: 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal' | undefined;
 }
 
 /**
@@ -55,7 +55,7 @@ export abstract class SmartHomeBase {
       prefix: [option.name],
       displayFilePath: 'hidden',
       displayFunctionName: false,
-      minLevel: option.logLevel ?? 'info',
+      minLevel: Config.logLevel,
     });
 
     this.name = option.name;

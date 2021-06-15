@@ -13,16 +13,14 @@ export interface ModuleData {
 }
 
 /**
- * Base application option type with the log level property.
+ * Define the log level type.
  */
-export interface LogLevelOption {
-  logLevel: 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal' | undefined;
-}
+export type LogLevel = 'silly' | 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal' | undefined;
 
 /**
  * Base configuration.
  */
-export interface ConfigBase<T extends LogLevelOption> extends LogLevelOption {
+export interface ConfigBase<T> {
   mqtt: {
     host: string | undefined;
     port: number | undefined;
@@ -43,22 +41,27 @@ export interface ConfigBase<T extends LogLevelOption> extends LogLevelOption {
 /**
  * Config helper class.
  */
-export class Config<T extends LogLevelOption> {
+export class Config<T> {
   private logger: Logger;
+
+  static logLevel: LogLevel = 'info';
 
   private mqttOption: MqttBrokerClientOption;
   private influxOption: InfluxDbClientOption;
   private appOption: T;
 
-  constructor(module: ModuleData, config: ConfigBase<T>) {
+  constructor(module: ModuleData, config: ConfigBase<T>, logLevel: LogLevel) {
     this.logger = new Logger({ displayFilePath: 'hidden', displayFunctionName: false });
     this.logger.info(`${module.name} ${module.version}`);
+
+    if (logLevel !== undefined) {
+      Config.logLevel = logLevel;
+    }
 
     this.mqttOption = {
       host: Config.useValueOrDefault('mqtt.host', config.mqtt.host, 'localhost'),
       port: Config.useValueOrDefault('mqtt.port', config.mqtt.port, 1883),
       system: Config.useValueOrDefault('mqtt.system', config.mqtt.system, module.name),
-      logLevel: config.logLevel,
     };
     this.influxOption = {
       host: Config.useValueOrDefault('influx.host', config.influx.host, 'localhost'),
@@ -68,10 +71,8 @@ export class Config<T extends LogLevelOption> {
       token: Config.useValueOrDefault('influx.token', config.influx.token, ''),
       org: Config.useValueOrDefault('influx.org', config.influx.org, 'default'),
       bucket: Config.useValueOrDefault('influx.bucket', config.influx.bucket, module.name),
-      logLevel: config.logLevel,
     };
     this.appOption = config.app;
-    this.appOption.logLevel = config.logLevel;
   }
 
   /**
