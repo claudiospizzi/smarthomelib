@@ -50,7 +50,7 @@ export class Config<T> {
   private influxOption: InfluxDbClientOption;
   private appOption: T;
 
-  constructor(module: ModuleData, config: ConfigBase<T>, logLevel: LogLevel) {
+  constructor(module: ModuleData, logLevel: LogLevel, config: ConfigBase<T>) {
     this.logger = new Logger({ displayFilePath: 'hidden', displayFunctionName: false });
     this.logger.info(`${module.name} ${module.version}`);
 
