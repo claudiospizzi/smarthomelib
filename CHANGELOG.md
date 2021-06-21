@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.6.0
 
 * Added: New tag system for the influx data
+* Changed: Add the MQTT prefix called smarthome
 
 ## 1.5.1
 

@@ -1,8 +1,8 @@
+import { Config } from '../helpers/Config';
 import { ActionMessage, StatusMessage } from './../bases/SmartHomeBase';
+import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
 import { connect as mqttConnect, MqttClient } from 'mqtt';
 import { IEvent, EventDispatcher } from 'strongly-typed-events';
-import { SmartHomeClientBase } from './../bases/SmartHomeClientBase';
-import { Config } from '../helpers/Config';
 
 /**
  * Type used as connection callback to check, if the devices are connected.
@@ -25,6 +25,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private subscriptions: Array<string> = [];
 
   private url: string;
+  private prefix = 'smarthome';
 
   private onActionMessageDispatcher = new EventDispatcher<MqttBrokerClient, ActionMessage>();
   private onStatusMessageDispatcher = new EventDispatcher<MqttBrokerClient, StatusMessage>();
@@ -84,7 +85,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
     if (!this.isInitialized) {
       this.client = mqttConnect(this.url, {
         will: {
-          topic: `${Config.system}/connected`,
+          topic: `${this.prefix}/${Config.system}/connected`,
           payload: '0',
           retain: true,
           qos: 2,
@@ -138,6 +139,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
   private handleMessage(topic: string, message: string): void {
     this.logger.debug(`Message received on topic '${topic}': ${message}`);
     const topics: string[] = message.split('/');
+    topics.shift(); // Remove the prefix
     if (topics.length === 4 && MqttBrokerClient.isValidJSON(message)) {
       this.onStatusMessage({
         system: topics[0],
@@ -178,7 +180,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * @param action The action. Default is any action.
    */
   subscribeAction(system = Config.system, room = '+', device = '+', feature = '+', action = '+'): void {
-    const topic = `${system}/${room}/${device}/${feature}/${action}`;
+    const topic = `${this.prefix}/${system}/${room}/${device}/${feature}/${action}`;
     this.subscriptions.push(topic);
     if (this.client !== undefined) {
       this.client.subscribe(topic);
@@ -193,7 +195,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    * @param feature The feature. Default is any feature.
    */
   subscribeStatus(system = Config.system, room = '+', device = '+', feature = '+'): void {
-    const topic = `${system}/${room}/${device}/${feature}`;
+    const topic = `${this.prefix}/${system}/${room}/${device}/${feature}`;
     this.subscriptions.push(topic);
     if (this.client !== undefined) {
       this.client.subscribe(topic);
@@ -207,7 +209,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    */
   publishAction(message: ActionMessage, retain = false): void {
     if (this.client !== undefined) {
-      const topic = `${message.system}/${message.room}/${message.device}/${message.feature}/${message.action}`;
+      const topic = `${this.prefix}/${message.system}/${message.room}/${message.device}/${message.feature}/${message.action}`;
       const msg = JSON.stringify({ ts: Date.now() });
       this.logger.debug(`Publish action message on topic '${topic}': ${msg}`);
       this.client.publish(topic, msg, { retain: retain, qos: 2 });
@@ -223,7 +225,7 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    */
   publishStatus(message: StatusMessage, retain = false): void {
     if (this.client !== undefined) {
-      const topic = `${message.system}/${message.room}/${message.device}/${message.feature}`;
+      const topic = `${this.prefix}/${message.system}/${message.room}/${message.device}/${message.feature}`;
       const msg = JSON.stringify({ ts: Date.now(), val: message.value });
       this.logger.debug(`Publish status message on topic '${topic}': ${msg}`);
       this.client.publish(topic, msg, { retain: retain, qos: 2 });
@@ -238,7 +240,10 @@ export class MqttBrokerClient extends SmartHomeClientBase {
    */
   private publishDeviceConnected(deviceConnected: boolean): void {
     if (this.client !== undefined) {
-      this.client.publish(`${Config.system}/connected`, deviceConnected ? '2' : '1', { retain: true, qos: 2 });
+      this.client.publish(`${this.prefix}/${Config.system}/connected`, deviceConnected ? '2' : '1', {
+        retain: true,
+        qos: 2,
+      });
     } else {
       this.logger.warn('Not initialized, unable to publish the connection state.');
     }
