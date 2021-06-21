@@ -121,7 +121,10 @@ export class InfluxDbClient extends SmartHomeClientBase {
    * @returns The InfluxDB point.
    */
   private static generatePoint(message: StatusMessage) {
-    let point = new Point('smarthome').tag('room', message.room).tag('device', message.device);
+    let point = new Point('smarthome')
+      .tag('system', message.system)
+      .tag('room', message.room)
+      .tag('device', message.device);
     if (typeof message.value === 'string') {
       point = point.stringField(message.feature, message.value);
     }

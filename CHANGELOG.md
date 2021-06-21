@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is mainly based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 1.6.0
+
+* Added: New tag system for the influx data
+
 ## 1.5.1
 
 * Fixed: Use the system of the Config class in the MQTT broker
